@@ -1,0 +1,353 @@
+{
+	"info": {
+		"_postman_id": "3c96107b-231c-4e9c-bfba-034df95e3595",
+		"name": "Create n Users for Workshop",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Starter",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var userCount = pm.info.iteration+1;",
+							"postman.setEnvironmentVariable(\"userCount\", userCount);",
+							"if(pm.info.iteration>0){",
+							"postman.setNextRequest(\"Auth Skipped\");",
+							"} "
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://postman-echo.com/get",
+					"protocol": "https",
+					"host": [
+						"postman-echo",
+						"com"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Authenticate",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"postman.setEnvironmentVariable(\"session.id\", jsonData.sessionId);",
+							"postman.setEnvironmentVariable(\"user.id\", jsonData.id);",
+							"tests[\"Authenticated\"] = responseCode.code === 200;",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//console.log(\"iteration==\"+pm.info.iteration);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"gsivajipharmabackup\",\n  \"password\": \"NewSub0rg\"\n}"
+				},
+				"url": {
+					"raw": "https://dmp-us.informaticacloud.com/identity-service/api/v1/Login",
+					"protocol": "https",
+					"host": [
+						"dmp-us",
+						"informaticacloud",
+						"com"
+					],
+					"path": [
+						"identity-service",
+						"api",
+						"v1",
+						"Login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Auth Skipped",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://postman-echo.com/get",
+					"protocol": "https",
+					"host": [
+						"postman-echo",
+						"com"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User Created!\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "INFA-SESSION-ID",
+						"value": "{{session.id}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"datasteward{{userCount}}\",\n    \"password\":\"Password1\",\n    \"firstName\": \"Data\",\n    \"lastName\": \"Steward - {{userCount}}\",\n    \"title\": \"Workshop User\",\n    \"description\":\"Temperory user created for workshop. Password is Password1\",\n    \"email\": \"anonymous@nomail.com\",\n    \"phone\": \"650-385-5000\",\n    \"authentication\": 0,\n    \"groups\": [\n        \"dKDUY4KtnKScpqbihStpGs\"\n    ]\n}"
+				},
+				"url": {
+					"raw": "https://usw1.dmp-us.informaticacloud.com/saas/public/core/v3/users",
+					"protocol": "https",
+					"host": [
+						"usw1",
+						"dmp-us",
+						"informaticacloud",
+						"com"
+					],
+					"path": [
+						"saas",
+						"public",
+						"core",
+						"v3",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();",
+							"",
+							"if(jsonData[0]){",
+							"    postman.setEnvironmentVariable(\"userId\", jsonData[0].id);",
+							"}else{",
+							"    console.log('User not found!');",
+							"    postman.setNextRequest(null);",
+							"}",
+							"pm.test(\"User found!\", () => {",
+							"  pm.expect(jsonData[0].id).to.be.a(\"string\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "INFA-SESSION-ID",
+						"value": "{{session.id}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"disabled": true
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://usw1.dmp-us.informaticacloud.com/saas/public/core/v3/users?q=userName==datasteward{{userCount}}",
+					"protocol": "https",
+					"host": [
+						"usw1",
+						"dmp-us",
+						"informaticacloud",
+						"com"
+					],
+					"path": [
+						"saas",
+						"public",
+						"core",
+						"v3",
+						"users"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "userName==datasteward{{userCount}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User Deleted\", () => {",
+							"  pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "INFA-SESSION-ID",
+						"value": "{{session.id}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"disabled": true
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "https://usw1.dmp-us.informaticacloud.com/saas/public/core/v3/users/{{userId}}",
+					"protocol": "https",
+					"host": [
+						"usw1",
+						"dmp-us",
+						"informaticacloud",
+						"com"
+					],
+					"path": [
+						"saas",
+						"public",
+						"core",
+						"v3",
+						"users",
+						"{{userId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "userCount",
+			"value": "1"
+		},
+		{
+			"key": "userCount",
+			"value": ""
+		}
+	]
+}
